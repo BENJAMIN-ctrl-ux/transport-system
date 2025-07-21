@@ -64,5 +64,5 @@ def create_app():
     from app.routes.approver_routes import approver_bp
     app.register_blueprint(approver_bp, url_prefix='/approver')
 
-    app.register_blueprint(main)
+
     return app

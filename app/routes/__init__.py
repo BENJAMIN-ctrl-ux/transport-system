@@ -1,7 +1,7 @@
-from flask import Blueprint
+from flask import Blueprint, render_template
 
 main = Blueprint('main', __name__)
 
-@main.route('/')
+@main.route('/auth/login')
 def index():
-    return "Welcome to Transport System"
+    return render_template('login.html')
