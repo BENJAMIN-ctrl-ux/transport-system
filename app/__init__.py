@@ -9,7 +9,7 @@ from app.extensions import db
 from app.models.user import User
 from app import models
 from flask import Flask
-from .routes import main
+
 
 
 migrate = Migrate()
