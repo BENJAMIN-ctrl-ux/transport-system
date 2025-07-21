@@ -8,7 +8,8 @@ import os
 from app.extensions import db
 from app.models.user import User
 from app import models
-
+from flask import Flask
+from .routes import main
 
 
 migrate = Migrate()
@@ -63,5 +64,5 @@ def create_app():
     from app.routes.approver_routes import approver_bp
     app.register_blueprint(approver_bp, url_prefix='/approver')
 
-    
+    app.register_blueprint(main)
     return app
