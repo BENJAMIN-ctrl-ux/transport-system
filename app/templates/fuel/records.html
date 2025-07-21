@@ -1,0 +1,21 @@
+<h2>My Fuel Requests</h2>
+<table>
+    <tr>
+        <th>Fuel Type</th>
+        <th>Amount</th>
+        <th>Vehicle</th>
+        <th>Odometer</th>
+        <th>Purpose</th>
+        <th>Status</th>
+    </tr>
+    {% for r in requests %}
+    <tr>
+        <td>{{ r.fuel_type }}</td>
+        <td>{{ r.amount }}</td>
+        <td>{{ r.vehicle }}</td>
+        <td>{{ r.odometer }}</td>
+        <td>{{ r.purpose }}</td>
+        <td>{{ r.status }}</td>
+    </tr>
+    {% endfor %}
+</table>

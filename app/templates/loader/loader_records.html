@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Loader - Fuel Request Records</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='loaderdashboard.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .badge {
+            padding: 5px 10px;
+            border-radius: 12px;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .badge-approved { background-color: orange; }
+        .badge-loaded { background-color: green; }
+        .badge-rejected { background-color: red; }
+        .search-form {
+            margin-bottom: 20px;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <div class="welcome">Hi, {{ current_user.full_name }}</div>
+    <h1><i class="fas fa-folder"></i> Loader Fuel Request Records</h1>
+    <a href="{{ url_for('auth.logout') }}" class="logout">Logout</a>
+</div>
+
+<div class="container">
+    <div class="sidebar">
+        <a href="{{ url_for('loader_module.dashboard') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="{{ url_for('loader_module.register_vehicle') }}"><i class="fas fa-plus-circle"></i> Register Vehicle</a>
+        <a href="{{ url_for('loader_module.view_records') }}"><i class="fas fa-book"></i> Records</a>
+    </div>
+
+    <div class="content">
+        <h2><i class="fas fa-history"></i> Fuel Request Records</h2>
+
+        <!-- Search form -->
+        <form method="get" action="{{ url_for('loader_module.view_records') }}">
+            <input type="text" name="search" placeholder="Search by Driver or Vehicle" value="{{ request.args.get('search', '') }}">
+            <button type="submit" class="btn btn-primary">Search</button>
+            <a href="{{ url_for('loader_module.view_records') }}" class="btn btn-secondary">Back</a>
+        </form>
+
+
+        {% if records %}
+        <table>
+            <thead>
+            <tr>
+                <th>Driver</th>
+                <th>Vehicle</th>
+                <th>Odometer</th>
+                <th>Officer</th>
+                <th>Requested</th>
+                <th>Loaded</th>
+                <th>Balance</th>
+                <th>Status</th>
+                <th>Date</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for req in records %}
+            <tr>
+                <td>{{ req.driver_name }}</td>
+                <td>{{ req.vehicle.registration_no }}</td>
+                <td>{{ req.odometer_reading }}</td>
+                <td>{{ req.office_officer_assigned }}</td>
+                <td>{{ req.amount_requested }} Ksh</td>
+                <td>
+                    {% if req.amount_loaded %}
+                        {{ req.amount_loaded }} Ksh
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
+                <td>{{ req.current_card_balance }}</td>
+                <td>
+                    {% if req.status == 'Approved' %}
+                        <span class="badge badge-approved">Approved</span>
+                    {% elif req.status == 'Loaded' %}
+                        <span class="badge badge-loaded">Loaded</span>
+                    {% elif req.status == 'Rejected' %}
+                        <span class="badge badge-rejected">Rejected</span>
+                    {% endif %}
+                </td>
+                <td>{{ req.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p>No records found.</p>
+        {% endif %}
+
+        <!-- Back Button -->
+        <a href="{{ url_for('loader_module.dashboard') }}" class="btn btn-secondary mt-4">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+</body>
+</html>

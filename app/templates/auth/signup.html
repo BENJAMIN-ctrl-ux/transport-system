@@ -1,0 +1,46 @@
+
+{% block title %}{% endblock %}
+{% block content %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+<div class="login-container">
+  <img src="{{ url_for('static', filename='kenya_logo.png') }}" alt="Logo" class="logo-img">
+
+  <h1>Transport System</h1>
+  <p>Create a new account</p>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <form action="{{ url_for('auth.signup') }}" method="POST">
+    <input type="text" name="full_name" placeholder="Full Name" required>
+    <input type="text" name="username" placeholder="Username" required>
+    <input type="text" name="email" placeholder="Email" required>
+    <input type="password" name="password" placeholder="Password" required>
+    
+    <select name="role" required style="width: 100%; padding: 14px; margin: 10px 0; border-radius: 8px; border: none; background-color: #e0e0e0;">
+      <option value="">Select Role</option>
+      {% for role in roles %}
+        <option value="{{ role.name }}">{{ role.name }}</option>
+      {% endfor %}
+    </select>
+
+    <button type="submit">Sign Up</button>
+  </form>
+
+  <p class="signup-link">Already have an account?
+    <a href="{{ url_for('auth.login') }}">Login</a>
+  </p>
+
+  {% if error %}
+    <p style="color: red;">{{ error }}</p>
+  {% endif %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Loader Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='loaderdashboard.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            background-color: #007bff;
+            padding: 20px;
+            color: white;
+            text-align: center;
+            position: relative;
+        }
+
+        .header .logout {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #dc3545;
+            padding: 8px 12px;
+            border-radius: 4px;
+            color: white;
+            text-decoration: none;
+        }
+
+        .welcome {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .container {
+            display: flex;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #343a40;
+            color: white;
+            padding: 20px;
+        }
+
+        .sidebar a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 10px 0;
+        }
+
+        .sidebar a:hover {
+            background-color: #495057;
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn {
+            background-color: #28a745;
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .btn:hover {
+            background-color: #218838;
+        }
+
+        .badge {
+            padding: 5px 12px;
+            border-radius: 12px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .badge.green { background-color: #28a745; }
+        .badge.orange { background-color: #fd7e14; }
+        .badge.red { background-color: #dc3545; }
+        .badge.blue { background-color: #007bff; }
+
+        .flash-message {
+            color: red;
+            padding: 10px;
+            border: 1px solid red;
+            background-color: #fdd;
+            margin: 10px 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="welcome">Hi, {{ current_user.full_name }}</div>
+        <h1><i class="fas fa-gas-pump"></i> Loader Dashboard</h1>
+        <div class="user-info"> Welcome, {{ current_user.full_name }} |</div>
+        <a href="{{ url_for('auth.logout') }}" class="logout">Logout</a>
+    </div>
+
+    {% if message %}
+    <div class="flash-message">{{ message }}</div>
+    {% endif %}
+
+    <div class="container">
+        <div class="sidebar">
+            <a href="{{ url_for('loader_module.dashboard') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="{{ url_for('loader_module.register_vehicle') }}"><i class="fas fa-plus-circle"></i> Register Vehicle</a>
+            <a href="{{ url_for('loader_module.view_records') }}"><i class="fas fa-book"></i> Records</a>
+        </div>
+
+        <div class="content">
+            <h2><i class="fas fa-clock"></i> Pending Approved Fuel Requests</h2>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% if approved_requests %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Driver</th>
+                        <th>Vehicle</th>
+                        <th>Odometer</th>
+                        <th>Assigned Officer</th>
+                        <th>Amount Requested</th>
+                        <th>Amount Last Loaded</th>
+                        <th>Card Balance</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in approved_requests %}
+                    <tr>
+                        <td>{{ req.driver_name }}</td>
+                        <td>{{ req.vehicle.registration_no }}</td>
+                        <td>{{ req.odometer_reading }}</td>
+                        <td>{{ req.office_officer_assigned }}</td>
+                        <td>{{ req.amount_requested }}</td>
+                        <td>{{ req.amount_last_loaded }}</td>
+                        <td>{{ req.current_card_balance }}</td>
+                        <td>
+                            <form action="{{ url_for('loader_module.load_request', request_id=req.id) }}" method="post" style="display:inline;">
+                                <input type="number" name="amount_loaded" step="0.01" min="0" required placeholder="Enter amount" style="width: 120px; padding: 5px; margin-bottom: 5px;">
+                                <button type="submit" class="btn btn-success">Mark as Loaded</button>
+                            </form>
+
+                            <form action="{{ url_for('loader_module.reject_fuel', request_id=req.id) }}" method="post" style="display:inline;">
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to reject this request?');">Reject</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+                <p>No approved requests waiting to be loaded.</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,78 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h2 class="fw-bold mb-4">Fuel Request Records</h2>
+
+  <!-- Search form -->
+  <form method="GET" action="{{ url_for('fuelrequest.view_approver_records') }}" class="row mb-4">
+    <div class="col-md-5">
+      <input type="text" name="search" class="form-control" placeholder="Search by driver name or vehicle reg" value="{{ request.args.get('search', '') }}">
+    </div>
+    <div class="d-flex justify-content-between mb-3">
+  <a href="{{ url_for('fuelrequest.view_approver_records') }}" class="btn btn-secondary">
+    <i class="bi bi-arrow-counterclockwise"></i> Back to Records
+  </a>
+  <a href="{{ url_for('fuelrequest.approver_dashboard') }}" class="btn btn-outline-primary">
+    <i class="bi bi-arrow-left"></i> Back to Dashboard
+  </a>
+</div>
+    <div class="col-md-2">
+      <button type="submit" class="btn btn-primary w-100">Search</button>
+    </div>
+  </form>
+
+  <!-- Records table -->
+  <div class="table-responsive shadow-sm rounded">
+    <table class="table table-hover table-bordered align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Driver</th>
+          <th>Vehicle</th>
+          <th>Odometer</th>
+          <th>Officer Assigned</th>
+          <th>Amount Requested (Ksh)</th>
+          <th>Amount Loaded (Ksh)</th>
+          <th>Card Balance</th>
+          <th>Card Number</th>
+          <th>Status</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for req in records %}
+        <tr>
+          <td>{{ req.driver_name }}</td>
+          <td>{{ req.vehicle.registration_no }}</td>
+          <td>{{ req.odometer_reading }}</td>
+          <td>{{ req.office_officer_assigned }}</td>
+          <td>{{ req.amount_requested }}</td>
+          <td>
+            {% if req.amount_lastloaded %}
+              {{ req.amount_lastloaded }}
+            {% else %}
+              -
+            {% endif %}
+          </td>
+          <td>{{ req.current_card_balance }}</td>
+          <td>{{ req.card_no }}</td>
+          <td>
+            {% if req.status == 'Approved' %}
+              <span class="badge bg-warning text-white">Approved</span>
+            {% elif req.status == 'Loaded' %}
+              <span class="badge bg-success">Loaded</span>
+            {% elif req.status == 'Rejected' %}
+              <span class="badge bg-danger">Rejected</span>
+            {% endif %}
+          </td>
+          <td>{{ req.created_at.strftime('%Y-%m-%d %I:%M %p') }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="10" class="text-center text-muted">No records found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

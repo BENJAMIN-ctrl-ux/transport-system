@@ -1,0 +1,17 @@
+{% extends 'layout.html' %}
+{% block content %}
+<h2>Fuel Request Details</h2>
+<ul>
+  <li><strong>Driver:</strong> {{ request.driver_name }}</li>
+  <li><strong>Vehicle:</strong> {{ request.vehicle.plate_number }}</li>
+  <li><strong>Fuel Station:</strong> {{ request.fuel_station }}</li>
+  <li><strong>Odometer:</strong> {{ request.odometer_reading }}</li>
+  <li><strong>Officer Assigned:</strong> {{ request.office_officer_assigned }}</li>
+  <li><strong>Liters Requested:</strong> {{ request.amount_requested }}L</li>
+  <li><strong>Card Balance:</strong> {{ request.current_card_balance }}</li>
+  <li><strong>Status:</strong> {{ request.status }}</li>
+  <li><strong>Requested On:</strong> {{ request.created_at }}</li>
+</ul>
+
+<a href="{{ url_for('fuelrequest.approver_dashboard') }}" class="btn btn-secondary">Back</a>
+{% endblock %}
