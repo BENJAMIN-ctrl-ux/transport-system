@@ -61,7 +61,7 @@ def signup():
                     password=generate_password_hash(password),
                     role=role)
         
-        user.password = password
+        
         
         db.session.add(user)
         db.session.commit()
@@ -69,7 +69,7 @@ def signup():
         return redirect(url_for('auth.login'))
 
     roles = Role.query.all()
-    return render_template('auth/signup.html', roles=roles)
+    return render_template('signup.html', roles=roles)
 
 @auth_bp.route('/logout', methods=['GET'])
 @login_required
