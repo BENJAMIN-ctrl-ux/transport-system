@@ -190,8 +190,17 @@ def register_vehicle():
         db.session.commit()
         flash("Vehicle registered successfully!", "success")
         return redirect(url_for('loader_module.register_vehicle'))
-
-    vehicles = Vehicle.query.all()
+    
+        # Handle search
+    search_query = request.args.get('search', '').strip()
+    if search_query:
+        vehicles = Vehicle.query.filter(
+            (Vehicle.registration_no.ilike(f'%{search_query}%')) |
+            (Vehicle.model.ilike(f'%{search_query}%')) |
+            (Vehicle.card_no.ilike(f'%{search_query}%'))
+        ).all()
+    else:
+        vehicles = Vehicle.query.all()
     return render_template('dashboards/register_vehicle.html', vehicles=vehicles)
 
 

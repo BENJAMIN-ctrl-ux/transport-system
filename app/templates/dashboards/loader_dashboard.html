@@ -140,7 +140,9 @@
         }
     </style>
 </head>
+<div class="flex min-h-screen">
 <body>
+ 
     <div class="header">
         <div class="welcome">Hi, {{ current_user.full_name }}</div>
         <h1><i class="fas fa-gas-pump"></i> Loader Dashboard</h1>
@@ -148,9 +150,20 @@
         <a href="{{ url_for('auth.logout') }}" class="logout">Logout</a>
     </div>
 
-    {% if message %}
-    <div class="flash-message">{{ message }}</div>
-    {% endif %}
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mb-4 space-y-2">
+        {% for category, message in messages %}
+          {% if category.startswith('loader') %}
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-2 rounded">
+              {{ message }}
+            </div>
+          {% endif %}
+        {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
 
     <div class="container">
         <div class="sidebar">
@@ -161,15 +174,7 @@
 
         <div class="content">
             <h2><i class="fas fa-clock"></i> Pending Approved Fuel Requests</h2>
-
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="flash-message alert alert-{{ category }}">{{ message }}</div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-
+            
             {% if approved_requests %}
             <table>
                 <thead>
@@ -213,5 +218,7 @@
             {% endif %}
         </div>
     </div>
+
 </body>
+</div>
 </html>

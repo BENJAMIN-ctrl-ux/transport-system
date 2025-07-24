@@ -9,7 +9,9 @@
     <nav class="space-y-4 w-full text-center">
       <a href="#" class="block py-2 px-4 rounded bg-blue-600 text-white font-semibold">Dashboard</a>
       <a href="{{ url_for('fuelrequest.request_fuel') }}" class="block py-2 px-4 rounded hover:bg-blue-100">Request for Fuel</a>
-      <a href="#" class="block py-2 px-4 rounded hover:bg-blue-100">Records</a>
+      <a href="{{ url_for('driver.driver_records') }}" class="text-blue-700 hover:underline">
+      <i class="fas fa-folder-open"></i> My Records
+      </a>
     </nav>
   </aside>
 

@@ -1,83 +1,94 @@
 {% extends 'layout.html' %}
 {% block content %}
+<div class="min-h-screen px-4 py-6 bg-gray-50">
 
-<!-- Flash messages -->
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    {% for category, message in messages %}
-      {% if category.startswith('approver') %}
-        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-          {{ message }}
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-      {% endif %}
-    {% endfor %}
-  {% endif %}
-{% endwith %}
-
-<!-- Dashboard Summary -->
-<div class="row mb-4 mt-5">
-  <div class="col-md-6 col-lg-4">
-    <div class="card border-start border-4 border-warning shadow-sm">
-      <div class="card-body">
-        <h6 class="text-muted"><i class="bi bi-clock-history me-1"></i> Pending Requests</h6>
-        <h3 class="fw-bold text-warning">{{ pending_requests|length }}</h3>
-        <p class="text-muted mb-0">Awaiting approval</p>
+  <!-- ✅ Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="fixed top-5 right-5 z-50 space-y-2">
+        {% for category, message in messages %}
+          <div
+            class="px-4 py-3 rounded shadow-md text-white text-sm max-w-sm transition-opacity duration-500 opacity-100
+            {% if category == 'success' %}bg-green-500
+            {% elif category == 'danger' %}bg-red-500
+            {% elif category == 'warning' %}bg-yellow-500
+            {% else %}bg-gray-500{% endif %}"
+            id="flash-message"
+          >
+            {{ message }}
+          </div>
+        {% endfor %}
       </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- ✅ Dashboard Summary Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-10">
+    <div class="bg-white border-l-4 border-yellow-500 shadow p-5 rounded">
+      <h6 class="text-gray-500 text-sm"><i class="bi bi-clock-history"></i> Pending Requests</h6>
+      <h2 class="text-3xl font-bold text-yellow-500">{{ pending_requests|length }}</h2>
+      <p class="text-gray-500 text-sm">Awaiting approval</p>
+    </div>
+
+    <div class="bg-white border-l-4 border-green-500 shadow p-5 rounded">
+      <h6 class="text-gray-500 text-sm"><i class="bi bi-check-circle-fill"></i> Approved (Not Loaded)</h6>
+      <h2 class="text-3xl font-bold text-green-500">{{ approved_requests|length }}</h2>
+      <p class="text-gray-500 text-sm">Pending loader action</p>
     </div>
   </div>
-  <div class="col-md-6 col-lg-4">
-    <div class="card border-start border-4 border-success shadow-sm">
-      <div class="card-body">
-        <h6 class="text-muted"><i class="bi bi-check-circle-fill me-1"></i> Approved (Not Loaded)</h6>
-        <h3 class="fw-bold text-success">{{ approved_requests|length }}</h3>
-        <p class="text-muted mb-0">Pending loader action</p>
-      </div>
-    </div>
-  </div>
-</div>
 
-<!-- Pending Requests Table -->
-<div class="card shadow-sm mb-5">
-  <div class="card-header bg-light">
-    <h5 class="mb-0 text-primary"><i class="bi bi-hourglass-split"></i> Pending Fuel Requests</h5>
-  </div>
-  <div class="table-responsive">
-    <table class="table table-hover align-middle mb-0">
-      <thead class="table-light">
+  <!-- ✅ Pending Requests Table -->
+  <div class="bg-white shadow rounded mt-10 overflow-auto">
+    <div class="p-4 border-b bg-gray-100">
+      <h5 class="text-primary font-semibold text-lg"><i class="bi bi-hourglass-split"></i> Pending Fuel Requests</h5>
+    </div>
+    <table class="min-w-full table-auto text-sm text-left text-gray-700">
+      <thead class="bg-gray-200 text-xs uppercase">
         <tr>
-          <th>Driver</th>
-          <th>Vehicle</th>
-          <th>Card No</th>
-          <th>Odometer</th>
-          <th>Office/Officer</th>
-          <th>Requested</th>
-          <th>Card Balance</th>
-          <th>Last Loaded</th>
-          <th>Date</th>
-          <th>Status</th>
-          <th>Actions</th>
+          <th class="px-4 py-3">Driver</th>
+          <th class="px-4 py-3">Vehicle</th>
+          <th class="px-4 py-3">Card No</th>
+          <th class="px-4 py-3">Odometer</th>
+          <th class="px-4 py-3">Office/Officer</th>
+          <th class="px-4 py-3">Requested</th>
+          <th class="px-4 py-3">Card Balance</th>
+          <th class="px-4 py-3">Last Loaded</th>
+          <th class="px-4 py-3">Date</th>
+          <th class="px-4 py-3">Status</th>
+          <th class="px-4 py-3">Actions</th>
         </tr>
       </thead>
       <tbody>
         {% for req in pending_requests %}
-        <tr>
-          <td>{{ req.driver_name }}</td>
-          <td>{{ req.vehicle.registration_no }}</td>
-          <td>{{ req.card_no }}</td>
-          <td>{{ req.odometer_reading }}</td>
-          <td>{{ req.office_officer_assigned }}</td>
-          <td>{{ req.amount_requested }} Ksh</td>
-          <td>{{ req.current_card_balance }}</td>
-          <td>{{ req.amount_last_loaded or '—' }}</td>
-          <td>{{ req.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-          <td><span class="badge bg-primary">{{ req.status }}</span></td>
-          <td>
-            <form action="{{ url_for('fuelrequest.approve_request', request_id=req.id) }}" method="post" class="d-inline">
-              <button type="submit" class="btn btn-success btn-sm">Approve</button>
+        <tr class="border-b">
+          <td class="px-4 py-2">{{ req.driver_name }}</td>
+          <td class="px-4 py-2">{{ req.vehicle.registration_no }}</td>
+          <td class="px-4 py-2">{{ req.card_no }}</td>
+          <td class="px-4 py-2">{{ req.odometer_reading }}</td>
+          <td class="px-4 py-2">{{ req.office_officer_assigned }}</td>
+          <td class="px-4 py-2">{{ req.amount_requested }} Ksh</td>
+          <td class="px-4 py-2">{{ req.current_card_balance }}</td>
+          <td class="px-4 py-2">{{ req.amount_last_loaded or '—' }}</td>
+          <td class="px-4 py-2">{{ req.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+          <td class="px-4 py-2">
+            {% if req.status == 'Submitted' %}
+              <span class="px-3 py-1 rounded-full bg-blue-500 text-white text-xs">Submitted</span>
+            {% elif req.status == 'Approved' %}
+              <span class="px-3 py-1 rounded-full bg-amber-500 text-white text-xs">Approved</span>
+            {% elif req.status == 'Loaded' %}
+              <span class="px-3 py-1 rounded-full bg-green-600 text-white text-xs">Loaded</span>
+            {% elif req.status == 'Rejected' %}
+              <span class="px-3 py-1 rounded-full bg-red-600 text-white text-xs">Rejected</span>
+            {% else %}
+              <span class="px-3 py-1 rounded-full bg-gray-400 text-white text-xs">{{ req.status }}</span>
+            {% endif %}
+          </td>
+          <td class="px-4 py-2 flex gap-2">
+            <form action="{{ url_for('fuelrequest.approve_request', request_id=req.id) }}" method="post">
+              <button type="submit" class="bg-green-500 hover:bg-green-600 text-white text-xs px-3 py-1 rounded">Approve</button>
             </form>
-            <form action="{{ url_for('fuelrequest.cancel_request', request_id=req.id) }}" method="post" class="d-inline">
-              <button class="btn btn-danger btn-sm">Reject</button>
+            <form action="{{ url_for('fuelrequest.cancel_request', request_id=req.id) }}" method="post">
+              <button type="submit" class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded">Reject</button>
             </form>
           </td>
         </tr>
@@ -86,5 +97,4 @@
     </table>
   </div>
 </div>
-
 {% endblock %}

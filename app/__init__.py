@@ -21,7 +21,7 @@ def create_app():
 
     app = Flask(__name__, static_folder='../static')
     app.config.from_object('config.Config')
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///transport.db')
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'secret-key-placeholder')
     
@@ -59,7 +59,10 @@ def create_app():
     
     from app.routes.vehicle import vehicle_bp
     app.register_blueprint(vehicle_bp, url_prefix='/api/vehicle')
-
+    
+    
+    from app.routes.driver_routes import driver_bp
+    app.register_blueprint(driver_bp, url_prefix='/driver')
     
     from app.routes.approver_routes import approver_bp
     app.register_blueprint(approver_bp, url_prefix='/approver')
