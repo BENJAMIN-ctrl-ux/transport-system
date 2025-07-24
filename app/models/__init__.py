@@ -69,6 +69,7 @@ class FuelRequest(db.Model):
     amount_requested = db.Column(db.Float, nullable=False)
     amount_last_loaded = db.Column(db.Float, nullable=True)
     current_card_balance = db.Column(db.String(100), nullable=True)
+    amount_loaded = db.Column(db.String(20))
 
     card_record = db.relationship('FuelCardRecord', uselist=False, backref='fuel_request')
 

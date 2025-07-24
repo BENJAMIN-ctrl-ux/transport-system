@@ -1,78 +1,75 @@
-{% extends 'layout.html' %}
-{% block content %}
-<div class="container mt-5">
-  <h2 class="fw-bold mb-4">Fuel Request Records</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Approver - Loaded Records</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+<div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-gray-200 p-6">
+        <h2 class="text-xl font-bold mb-6 text-blue-600">Approver Panel</h2>
+        <nav class="flex flex-col space-y-4">
+            <a href="{{ url_for('fuelrequest.approved_records') }}" class="text-gray-700 hover:text-blue-500">Approved Requests</a>
+            <a href="{{ url_for('fuelrequest.view_approver_records') }}" class="text-gray-700 hover:text-blue-500 font-semibold">Records</a>
+            <a href="{{ url_for('fuelrequest.approver_dashboard') }}"class="text-gray-700 hover:text-blue-500 font-semibold">
+    ← Back to Dashboard
+</a>
+        </nav>
+    </aside>
 
-  <!-- Search form -->
-  <form method="GET" action="{{ url_for('fuelrequest.view_approver_records') }}" class="row mb-4">
-    <div class="col-md-5">
-      <input type="text" name="search" class="form-control" placeholder="Search by driver name or vehicle reg" value="{{ request.args.get('search', '') }}">
-    </div>
-    <div class="d-flex justify-content-between mb-3">
-  <a href="{{ url_for('fuelrequest.view_approver_records') }}" class="btn btn-secondary">
-    <i class="bi bi-arrow-counterclockwise"></i> Back to Records
-  </a>
-  <a href="{{ url_for('fuelrequest.approver_dashboard') }}" class="btn btn-outline-primary">
-    <i class="bi bi-arrow-left"></i> Back to Dashboard
-  </a>
-</div>
-    <div class="col-md-2">
-      <button type="submit" class="btn btn-primary w-100">Search</button>
-    </div>
-  </form>
+    <!-- Content Area -->
+    <div class="flex-1 p-6">
+        <h1 class="text-2xl font-bold mb-4">Loaded Fuel Request Records</h1>
 
-  <!-- Records table -->
-  <div class="table-responsive shadow-sm rounded">
-    <table class="table table-hover table-bordered align-middle">
-      <thead class="table-light">
-        <tr>
-          <th>Driver</th>
-          <th>Vehicle</th>
-          <th>Odometer</th>
-          <th>Officer Assigned</th>
-          <th>Amount Requested (Ksh)</th>
-          <th>Amount Loaded (Ksh)</th>
-          <th>Card Balance</th>
-          <th>Card Number</th>
-          <th>Status</th>
-          <th>Date</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for req in records %}
-        <tr>
-          <td>{{ req.driver_name }}</td>
-          <td>{{ req.vehicle.registration_no }}</td>
-          <td>{{ req.odometer_reading }}</td>
-          <td>{{ req.office_officer_assigned }}</td>
-          <td>{{ req.amount_requested }}</td>
-          <td>
-            {% if req.amount_lastloaded %}
-              {{ req.amount_lastloaded }}
-            {% else %}
-              -
-            {% endif %}
-          </td>
-          <td>{{ req.current_card_balance }}</td>
-          <td>{{ req.card_no }}</td>
-          <td>
-            {% if req.status == 'Approved' %}
-              <span class="badge bg-warning text-white">Approved</span>
-            {% elif req.status == 'Loaded' %}
-              <span class="badge bg-success">Loaded</span>
-            {% elif req.status == 'Rejected' %}
-              <span class="badge bg-danger">Rejected</span>
-            {% endif %}
-          </td>
-          <td>{{ req.created_at.strftime('%Y-%m-%d %I:%M %p') }}</td>
-        </tr>
+        <!-- Search Form -->
+        <form method="GET" class="mb-4 flex gap-4">
+            <input type="text" name="search_driver" placeholder="Search by Driver Name" class="px-4 py-2 border rounded w-1/3">
+            <input type="text" name="search_vehicle" placeholder="Search by Vehicle Reg" class="px-4 py-2 border rounded w-1/3">
+            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded">Search</button>
+        </form>
+
+        <!-- Records Table -->
+        {% if records %}
+        <div class="overflow-x-auto bg-white rounded shadow">
+            <table class="min-w-full table-auto">
+                <thead class="bg-gray-100 text-left">
+                    <tr>
+                        <th class="px-4 py-2">Driver</th>
+                        <th class="px-4 py-2">Vehicle</th>
+                        <th class="px-4 py-2">Card No</th>
+                        <th class="px-4 py-2">Odometer</th>
+                        <th class="px-4 py-2">Requested</th>
+                        <th class="px-4 py-3">Loaded</th>
+                        <th class="px-4 py-2">Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in records %}
+                    <tr class="border-t">
+                        <td class="px-4 py-2">{{ req.driver_name }}</td>
+                        <td class="px-4 py-2">{{ req.vehicle.registration_no }}</td>
+                        <td class="px-4 py-2">{{ req.card_no }}</td>
+                        <td class="px-4 py-2">{{ req.odometer_reading }}</td>
+                        <td class="px-4 py-2">{{ req.amount_requested }}</td>
+                        <td class="px-4 py-2">
+                            {% if req.amount_loaded %}
+                                {{ req.amount_loaded }} Ksh
+                            {% else %}
+                                <span class="text-gray-400 italic">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-2">{{ req.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         {% else %}
-        <tr>
-          <td colspan="10" class="text-center text-muted">No records found.</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+        <p class="text-gray-600">No loaded records found.</p>
+        {% endif %}
+    </div>
 </div>
-{% endblock %}
+</body>
+</html>

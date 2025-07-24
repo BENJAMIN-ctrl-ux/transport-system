@@ -109,6 +109,7 @@ class FuelRequest(db.Model):
     status = db.Column(db.String(20), default='Submitted')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+    amount_loaded = db.Column(db.String(20))
 
     user = db.relationship('User', back_populates='fuel_requests') 
     vehicle = db.relationship('Vehicle', back_populates='fuel_requests')

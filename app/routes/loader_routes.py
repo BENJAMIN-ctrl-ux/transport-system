@@ -55,7 +55,7 @@ def load_request(request_id):
 
         # Update the fuel request
         req.status = 'Loaded'
-        req.amount_last_loaded = amount_loaded  # You may rename to amount_loaded
+        req.amount_loaded = amount_loaded  # You may rename to amount_loaded
         req.current_card_balance = balance_after
         req.loaded_at = datetime.utcnow()
 

@@ -1,117 +1,87 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Loader - Fuel Request Records</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='loaderdashboard.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        .badge {
-            padding: 5px 10px;
-            border-radius: 12px;
-            color: white;
-            font-weight: bold;
-            font-size: 12px;
-        }
-        .badge-approved { background-color: orange; }
-        .badge-loaded { background-color: green; }
-        .badge-rejected { background-color: red; }
-        .search-form {
-            margin-bottom: 20px;
-        }
-        .btn-secondary {
-            background-color: #6c757d;
-            color: white;
-            padding: 6px 12px;
-            border: none;
-            border-radius: 4px;
-            text-decoration: none;
-            display: inline-block;
-        }
-        .btn-secondary:hover {
-            background-color: #5a6268;
-        }
-    </style>
-</head>
-<body>
-<div class="header">
-    <div class="welcome">Hi, {{ current_user.full_name }}</div>
-    <h1><i class="fas fa-folder"></i> Loader Fuel Request Records</h1>
-    <a href="{{ url_for('auth.logout') }}" class="logout">Logout</a>
-</div>
+{% extends 'layout.html' %}
 
-<div class="container">
-    <div class="sidebar">
-        <a href="{{ url_for('loader_module.dashboard') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-        <a href="{{ url_for('loader_module.register_vehicle') }}"><i class="fas fa-plus-circle"></i> Register Vehicle</a>
-        <a href="{{ url_for('loader_module.view_records') }}"><i class="fas fa-book"></i> Records</a>
-    </div>
+{% block content %}
+<div class="min-h-screen bg-gray-100 flex">
 
-    <div class="content">
-        <h2><i class="fas fa-history"></i> Fuel Request Records</h2>
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-gray-200 p-6">
+        <h2 class="text-xl font-bold mb-6 text-blue-600">Loader Panel</h2>
+        <nav class="flex flex-col space-y-4">
+            <a href="{{ url_for('loader_module.dashboard') }}" class="text-gray-700 hover:text-blue-500 font-semibold"><i class="fas fa-tachometer-alt mr-2"></i> Dashboard</a>
+            <a href="{{ url_for('loader_module.register_vehicle') }}" class="text-gray-700 hover:text-blue-500 font-semibold"><i class="fas fa-plus-circle mr-2"></i> Register Vehicle</a>
+            <a href="{{ url_for('loader_module.view_records') }}" class="text-gray-700 hover:text-blue-500 font-semibold"><i class="fas fa-book mr-2"></i> Records</a>
+        </nav>
+    </aside>
 
-        <!-- Search form -->
-        <form method="get" action="{{ url_for('loader_module.view_records') }}">
-            <input type="text" name="search" placeholder="Search by Driver or Vehicle" value="{{ request.args.get('search', '') }}">
-            <button type="submit" class="btn btn-primary">Search</button>
-            <a href="{{ url_for('loader_module.view_records') }}" class="btn btn-secondary">Back</a>
+    <!-- Main Content -->
+    <div class="flex-1 p-8">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800"><i class="fas fa-history mr-2"></i> Fuel Request Records</h1>
+                  <!-- Back Button -->
+        <a href="{{ url_for('loader_module.dashboard') }}" class="mt-6 inline-block text-blue-600 hover:underline">
+            ← Back to Dashboard
+        </a>  
+        </div>
+
+        <!-- Search Form -->
+        <form method="GET" action="{{ url_for('loader_module.view_records') }}" class="mb-6 flex flex-wrap gap-2">
+            <input type="text" name="search" placeholder="Search by Driver or Vehicle" value="{{ request.args.get('search', '') }}"
+                   class="border border-gray-300 rounded px-4 py-2 w-64 focus:outline-none focus:ring focus:border-blue-400">
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Search</button>
+            <a href="{{ url_for('loader_module.view_records') }}" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">Clear</a>
         </form>
 
-
+        <!-- Records Table -->
         {% if records %}
-        <table>
-            <thead>
-            <tr>
-                <th>Driver</th>
-                <th>Vehicle</th>
-                <th>Odometer</th>
-                <th>Officer</th>
-                <th>Requested</th>
-                <th>Loaded</th>
-                <th>Balance</th>
-                <th>Status</th>
-                <th>Date</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for req in records %}
-            <tr>
-                <td>{{ req.driver_name }}</td>
-                <td>{{ req.vehicle.registration_no }}</td>
-                <td>{{ req.odometer_reading }}</td>
-                <td>{{ req.office_officer_assigned }}</td>
-                <td>{{ req.amount_requested }} Ksh</td>
-                <td>
-                    {% if req.amount_loaded %}
-                        {{ req.amount_loaded }} Ksh
-                    {% else %}
-                        N/A
-                    {% endif %}
-                </td>
-                <td>{{ req.current_card_balance }}</td>
-                <td>
-                    {% if req.status == 'Approved' %}
-                        <span class="badge badge-approved">Approved</span>
-                    {% elif req.status == 'Loaded' %}
-                        <span class="badge badge-loaded">Loaded</span>
-                    {% elif req.status == 'Rejected' %}
-                        <span class="badge badge-rejected">Rejected</span>
-                    {% endif %}
-                </td>
-                <td>{{ req.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+        <div class="overflow-x-auto bg-white shadow rounded-lg">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-100">
+                    <tr class="text-left text-sm font-semibold text-gray-700">
+                        <th class="px-4 py-3">Driver</th>
+                        <th class="px-4 py-3">Vehicle</th>
+                        <th class="px-4 py-3">Odometer</th>
+                        <th class="px-4 py-3">Officer</th>
+                        <th class="px-4 py-3">Requested</th>
+                        <th class="px-4 py-3">Loaded</th>                
+                        <th class="px-4 py-3">Status</th>
+                        <th class="px-4 py-3">Date</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 text-sm">
+                    {% for req in records %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-2">{{ req.driver_name }}</td>
+                        <td class="px-4 py-2">{{ req.vehicle.registration_no }}</td>
+                        <td class="px-4 py-2">{{ req.odometer_reading }}</td>
+                        <td class="px-4 py-2">{{ req.office_officer_assigned }}</td>
+                        <td class="px-4 py-2">{{ req.amount_requested }} Ksh</td>
+                        <td class="px-4 py-2">
+                            {% if req.amount_loaded %}
+                                {{ req.amount_loaded }} Ksh
+                            {% else %}
+                                <span class="text-gray-400 italic"></span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-2">
+                            {% if req.status == 'Approved' %}
+                                <span class="bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-semibold">Approved</span>
+                            {% elif req.status == 'Loaded' %}
+                                <span class="bg-green-600 text-white px-2 py-1 rounded-full text-xs font-semibold">Loaded</span>
+                            {% elif req.status == 'Rejected' %}
+                                <span class="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold">Rejected</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-2">{{ req.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         {% else %}
-            <p>No records found.</p>
+            <p class="text-gray-600 mt-4">No records found.</p>
         {% endif %}
 
-        <!-- Back Button -->
-        <a href="{{ url_for('loader_module.dashboard') }}" class="btn btn-secondary mt-4">
-            <i class="fas fa-arrow-left"></i> Back to Dashboard
-        </a>
+
     </div>
 </div>
-</body>
-</html>
+{% endblock %}
