@@ -1,45 +1,81 @@
-<style>
-  <head>
-            .btn {
-            background-color: #278ce4ff;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            color: white;
-            text-decoration: none;
-        }
-
-        .btn:hover {
-            background-color: #71b6ebff;
-        }
-  </head>
-</style>
 {% extends 'layout.html' %}
 {% block content %}
 <div class="max-w-7xl mx-auto py-8 px-4">
-  <h2 class="text-2xl font-bold text-gray-800 mb-6"><i class="fas fa-history"></i> My Fuel Request Records</h2> 
+
+  <!-- Page Title -->
+  <h2 class="text-2xl font-bold text-gray-800 mb-6"><i class="fas fa-history"></i> My Fuel Request Records</h2>
 
   <!-- Search & Filter Form -->
   <form method="GET" action="{{ url_for('driver.driver_records') }}" class="flex flex-col md:flex-row gap-4 mb-6">
     <input type="text" name="search_reg" placeholder="Search by vehicle registration..." value="{{ request.args.get('search_reg', '') }}"
-           class="w-full md:w-1/3 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+           class="w-full md:w-1/3 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
 
     <input type="date" name="search_date" value="{{ request.args.get('search_date', '') }}"
-           class="w-full md:w-1/3 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+           class="w-full md:w-1/3 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
 
-    <button type="submit"
-            class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-md">
+    <button type="submit" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-md">
       Search
     </button>
 
-    <a href="{{ url_for('fuelrequest.dashboard') }}" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-md">Back</a>
+    <a href="{{ url_for('driver.driver_dashboard') }}" class="w-full md:w-auto bg-gray-600 hover:bg-gray-700 text-white font-medium px-6 py-2 rounded-md">Back</a>
   </form>
 
-  <!-- Results Table -->
+  <!-- Modal for Filtered Results -->
+  <div id="searchModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-11/12 md:w-3/4 max-h-[80vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold text-gray-700">Filtered Records</h3>
+        <button onclick="closeModal()" class="text-red-500 text-xl font-bold">&times;</button>
+      </div>
+
+      {% if records %}
+      <table class="min-w-full table-auto text-sm">
+        <thead class="bg-blue-600 text-white">
+          <tr>
+            <th class="px-4 py-2 text-left">Vehicle</th>
+            <th class="px-4 py-2 text-left">Card No</th>
+            <th class="px-4 py-2 text-left">Odometer</th>
+            <th class="px-4 py-2 text-left">Requested</th>
+            <th class="px-4 py-2 text-left">Status</th>
+            <th class="px-4 py-2 text-left">Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for record in records %}
+          <tr class="border-b hover:bg-gray-50">
+            <td class="px-4 py-2">{{ record.vehicle.registration_no }}</td>
+            <td class="px-4 py-2">{{ record.card_no }}</td>
+            <td class="px-4 py-2">{{ record.odometer_reading }}</td>
+            <td class="px-4 py-2">{{ record.amount_requested }} Ksh</td>
+            <td class="px-4 py-2">
+              {% if record.status == 'Submitted' %}
+                <span class="bg-blue-500 text-white px-3 py-1 rounded-full text-xs">Submitted</span>
+              {% elif record.status == 'Approved' %}
+                <span class="bg-yellow-500 text-white px-3 py-1 rounded-full text-xs">Approved</span>
+              {% elif record.status == 'Loaded' %}
+                <span class="bg-green-600 text-white px-3 py-1 rounded-full text-xs">Loaded</span>
+              {% elif record.status == 'Rejected' %}
+                <span class="bg-red-500 text-white px-3 py-1 rounded-full text-xs">Rejected</span>
+              {% else %}
+                <span class="bg-gray-400 text-white px-3 py-1 rounded-full text-xs">{{ record.status }}</span>
+              {% endif %}
+            </td>
+            <td class="px-4 py-2">{{ record.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <p class="text-gray-600">No matching records found.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Results Table (Main Display) -->
   {% if records %}
-  <div class="overflow-x-auto">
-    <table class="min-w-full table-auto bg-white shadow-md rounded-md">
-      <thead class="bg-blue-600 text-white">
+  <div class="overflow-x-auto bg-white shadow rounded-lg">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-blue-600 text-white text-sm font-semibold">
         <tr>
           <th class="px-4 py-2 text-left">Vehicle</th>
           <th class="px-4 py-2 text-left">Card No</th>
@@ -49,9 +85,9 @@
           <th class="px-4 py-2 text-left">Date</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="divide-y divide-gray-100 text-sm">
         {% for record in records %}
-        <tr class="border-b hover:bg-gray-50">
+        <tr class="hover:bg-gray-50">
           <td class="px-4 py-2">{{ record.vehicle.registration_no }}</td>
           <td class="px-4 py-2">{{ record.card_no }}</td>
           <td class="px-4 py-2">{{ record.odometer_reading }}</td>
@@ -78,6 +114,25 @@
   {% else %}
     <div class="text-gray-500 mt-8">No records found matching your filters.</div>
   {% endif %}
-  
+
 </div>
+
+<!-- JavaScript to Open Modal if Search Filters Are Applied -->
+<script>
+  window.onload = function () {
+    const reg = "{{ request.args.get('search_reg', '') }}";
+    const date = "{{ request.args.get('search_date', '') }}";
+    const hasResults = {{ 'true' if records else 'false' }};
+    if ((reg || date) && hasResults) {
+      document.getElementById('searchModal').classList.remove('hidden');
+    }
+  }
+
+  function closeModal() {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('search_reg');
+    url.searchParams.delete('search_date');
+    window.location.href = url.toString();
+  }
+</script>
 {% endblock %}
