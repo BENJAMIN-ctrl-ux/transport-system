@@ -30,6 +30,56 @@
             <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Search</button>
             <a href="{{ url_for('loader_module.view_records') }}" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">Clear</a>
         </form>
+<!-- Modal Background -->
+<div id="searchModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-11/12 md:w-3/4 max-h-[80vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-gray-700">Search Results</h3>
+            <button onclick="closeModal()" class="text-red-500 text-xl font-bold">&times;</button>
+        </div>
+
+        {% if records %}
+        <table class="min-w-full text-sm text-left border">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-4 py-2">Driver</th>
+                    <th class="px-4 py-2">Vehicle</th>
+                    <th class="px-4 py-2">Odometer</th>
+                    <th class="px-4 py-2">Requested</th>
+                    <th class="px-4 py-2">Loaded</th>
+                    <th class="px-4 py-2">Balance</th>
+                    <th class="px-4 py-2">Status</th>
+                    <th class="px-4 py-2">Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in records %}
+                <tr class="border-t">
+                    <td class="px-4 py-2">{{ req.driver_name }}</td>
+                    <td class="px-4 py-2">{{ req.vehicle.registration_no }}</td>
+                    <td class="px-4 py-2">{{ req.odometer_reading }}</td>
+                    <td class="px-4 py-2">{{ req.amount_requested }} Ksh</td>
+                    <td class="px-4 py-2">{{ req.amount_loaded or "N/A" }} Ksh</td>
+                    <td class="px-4 py-2">{{ req.current_card_balance }}</td>
+                    <td class="px-4 py-2">
+                        {% if req.status == 'Approved' %}
+                            <span class="badge badge-approved">Approved</span>
+                        {% elif req.status == 'Loaded' %}
+                            <span class="badge badge-loaded">Loaded</span>
+                        {% elif req.status == 'Rejected' %}
+                            <span class="badge badge-rejected">Rejected</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-2">{{ req.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p class="text-gray-600">No matching records found.</p>
+        {% endif %}
+    </div>
+</div>
 
         <!-- Records Table -->
         {% if records %}
@@ -81,6 +131,23 @@
             <p class="text-gray-600 mt-4">No records found.</p>
         {% endif %}
 
+<script>
+    // Show the modal only if there is a search query
+    window.onload = function () {
+        const searchQuery = "{{ request.args.get('search', '') }}";
+        const hasResults = {{ 'true' if records else 'false' }};
+        if (searchQuery && hasResults) {
+            document.getElementById('searchModal').classList.remove('hidden');
+        }
+    }
+
+    function closeModal() {
+        // Clear search from URL and reload page
+        const url = new URL(window.location.href);
+        url.searchParams.delete('search');
+        window.location.href = url.toString();
+    }
+</script>
 
     </div>
 </div>

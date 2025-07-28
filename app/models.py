@@ -4,6 +4,8 @@ from enum import Enum
 from app.extensions import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+from sqlalchemy.sql import func
+
 
 # Enums
 class UserRole(Enum):
@@ -108,7 +110,7 @@ class FuelRequest(db.Model):
     current_card_balance = db.Column(db.Float)
     status = db.Column(db.String(20), default='Submitted')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=func.now(), onupdate=func.now())
     amount_loaded = db.Column(db.String(20))
 
     user = db.relationship('User', back_populates='fuel_requests') 

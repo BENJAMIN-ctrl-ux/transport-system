@@ -125,6 +125,7 @@
 
             <label for="model">Model:</label>
             <input type="text" name="model" required>
+            
 
             <label for="color">Color:</label>
             <input type="text" name="color" required>
@@ -154,7 +155,7 @@
             <tbody>
                 {% for vehicle in vehicles %}
                 <tr>
-                    <td>{{ vehicle.registration }}</td>
+                    <td>{{ vehicle.registration_no }}</td>
                     <td>{{ vehicle.department }}</td>
                     <td>{{ vehicle.card_no }}</td>
                     <td>{{ vehicle.model }}</td>

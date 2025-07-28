@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, render_template, flash, url_for, redirect
 from app import db
 from app.models import FuelRequest, Vehicle 
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask_login import login_required, current_user
 from app.utils.decorators import role_required
 from sqlalchemy import extract, func
@@ -10,13 +10,8 @@ from app.models import FuelRequest
 from app.models import Vehicle
 
 fuelrequest_bp = Blueprint('fuelrequest', __name__, url_prefix='/fuelrequest')
-# drivers dashboard route
-@fuelrequest_bp.route('/dashboard')
-@login_required
-@role_required('Driver')
-def dashboard():
-    requests = FuelRequest.query.filter_by(user_id=current_user.id).order_by(FuelRequest.created_at.desc()).all()
-    return render_template('dashboards/driver_dashboard.html', requests=requests)
+
+
 
 # create fuel request
 @fuelrequest_bp.route('/request_fuel', methods=['GET', 'POST'])
@@ -39,11 +34,11 @@ def request_fuel():
             
             if not vehicle_id or not amount_requested:
                 flash('Vehicle and amount requested are required.', 'danger')
-                return redirect(url_for('fuelrequest.request_fuel'))
+                return redirect(url_for('driver.request_fuel'))
 
             new_request = FuelRequest(
-                driver_name=driver_name,
                 user_id=current_user.id,
+                driver_name=driver_name,
                 vehicle_id=vehicle_id,
                 card_no=card_no,
                 odometer_reading=odometer_reading,
@@ -68,7 +63,6 @@ def request_fuel():
 
     vehicles = Vehicle.query.all()
     return render_template('fuel/request_form.html', vehicles=vehicles)
-
 
 
 # Approve fuel request (Approver)

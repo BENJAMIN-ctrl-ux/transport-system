@@ -5,7 +5,7 @@ from .user import User
 from .role import Role
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
-
+from sqlalchemy.sql import func
 
 
 
@@ -63,6 +63,7 @@ class FuelRequest(db.Model):
 
     status = db.Column(db.String(50), default='Submitted')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=func.now(), onupdate=func.now())
     approved_at = db.Column(db.DateTime, nullable=True)
     loaded_at = db.Column(db.DateTime, nullable=True)
 

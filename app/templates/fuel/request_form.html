@@ -19,6 +19,7 @@
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             width: 450px;
+            position: relative;
         }
 
         h2 {
@@ -34,45 +35,57 @@
         }
 
         input[type="text"],
-        input[type="number"],
-        select {
+        input[type="number"] {
             width: 100%;
             padding: 8px 10px;
             border: 1px solid #ccc;
             border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .dropdown {
+            position: absolute;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            width: 100%;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 10;
+            display: none;
+        }
+
+        .dropdown div {
+            padding: 8px 10px;
+            cursor: pointer;
+        }
+
+        .dropdown div:hover {
+            background-color: #f0f0f0;
         }
 
         .form-buttons {
-            margin-top: 30px;
+            margin-top: 20px;
             display: flex;
             justify-content: space-between;
         }
 
-        button {
+        button, .btn {
             padding: 10px 20px;
             border: none;
             border-radius: 6px;
             background-color: #007BFF;
             color: white;
-            cursor: pointer;
             font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
         }
 
-        button:hover {
+        button:hover, .btn:hover {
             background-color: #0056b3;
         }
 
         .btn {
             background-color: #6c757d;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            color: white;
-            text-decoration: none;
-        }
-
-        .btn:hover {
-            background-color: #5a6268;
         }
 
         .alert {
@@ -99,58 +112,111 @@
     </style>
 </head>
 <body>
-    <div class="form-container">
-        <h2>Fuel Request Form</h2>
+<div class="form-container">
+    <h2>Fuel Request Form</h2>
 
-        <!-- Flash message block -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
             {% for category, message in messages %}
-              <div class="alert alert-{{ category }}">
-                {{ message }}
-              </div>
+                <div class="alert alert-{{ category }}">{{ message }}</div>
             {% endfor %}
-          {% endif %}
-        {% endwith %}
+        {% endif %}
+    {% endwith %}
 
-        <form method="POST" action="{{ url_for('fuelrequest.request_fuel') }}">
-            <label for="driver_name">Driver:</label>
-            <input type="text" name="driver_name" value="{{ current_user.full_name }}" readonly>
+    <form method="POST" action="{{ url_for('fuelrequest.request_fuel') }}">
+        <label for="driver_name">Driver:</label>
+        <input type="text" name="driver_name" value="{{ current_user.full_name }}" readonly>
 
-            <label for="vehicle_id">Select Vehicle</label>
-            <select name="vehicle_id" required>
-                {% for vehicle in vehicles %}
-                <option value="{{ vehicle.id }}">{{ vehicle.registration_no }} - {{ vehicle.model }}</option>
-                {% endfor %}
-            </select>
+        <!-- Vehicle Searchable Dropdown -->
+        <label for="vehicleSearch">Select Vehicle:</label>
+        <input type="text" id="vehicleSearch" placeholder="Type registration number..." autocomplete="off" required>
+        <div class="dropdown" id="vehicleDropdown"></div>
 
-            <label for="card_no">Card Number:</label>
-            <input type="text" name="card_no" required>
+        <!-- Hidden field to submit vehicle ID -->
+        <input type="hidden" name="vehicle_id" id="selectedVehicleId">
 
-            <label for="odometer_reading">Odometer Reading:</label>
-            <input type="number" name="odometer_reading" required>
+        <label for="card_no">Card Number:</label>
+        <input type="text" id="cardNumber" name="card_no" readonly required>
 
-            <label for="office_officer_assigned">Office/Officer Assigned</label>
-            <input type="text" name="office_officer_assigned" required>
+        <label for="odometer_reading">Odometer Reading:</label>
+        <input type="number" name="odometer_reading" required>
 
-            <label for="amount_requested">Amount Requested (Ksh)</label>
-            <input type="number" name="amount_requested" required>
+        <label for="office_officer_assigned">Office/Officer Assigned</label>
+        <input type="text" name="office_officer_assigned" required>
 
-            <label for="amount_last_loaded">Amount Last Loaded (Ksh)</label>
-            <input type="number" name="amount_last_loaded" required>
+        <label for="amount_requested">Amount Requested (Ksh)</label>
+        <input type="number" name="amount_requested" required>
 
-            <label for="current_card_balance">Current Card Balance (Ksh)</label>
-            <input type="number" name="current_card_balance" required>
+        <label for="amount_last_loaded">Amount Last Loaded (Ksh)</label>
+        <input type="number" name="amount_last_loaded" required>
 
-            <div class="form-buttons">
-                <button type="submit">Submit Request</button>
-                <a href="{{ url_for('fuelrequest.dashboard') }}" class="btn">Back</a>
-            </div>
-        </form>
-    </div>
+        <label for="current_card_balance">Current Card Balance (Ksh)</label>
+        <input type="number" name="current_card_balance" required>
+
+        <div class="form-buttons">
+            <button type="submit">Submit Request</button>
+            <a href="{{ url_for('driver.driver_dashboard') }}" class="btn">Back</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    const vehicles = [
+        {% for vehicle in vehicles %}
+            {
+                id: "{{ vehicle.id }}",
+                reg: "{{ vehicle.registration_no|escape }}",
+                card: "{{ vehicle.card_no|escape }}"
+            },
+        {% endfor %}
+    ];
+
+    const searchInput = document.getElementById('vehicleSearch');
+    const dropdown = document.getElementById('vehicleDropdown');
+    const hiddenId = document.getElementById('selectedVehicleId');
+    const cardInput = document.getElementById('cardNumber');
+
+    searchInput.addEventListener('input', function () {
+        const value = this.value.toLowerCase();
+        dropdown.innerHTML = '';
+        if (value === '') {
+            dropdown.style.display = 'none';
+            return;
+        }
+
+        const filtered = vehicles.filter(v => v.reg.toLowerCase().includes(value));
+        if (filtered.length === 0) {
+            dropdown.style.display = 'none';
+            return;
+        }
+
+        filtered.forEach(vehicle => {
+            const option = document.createElement('div');
+            option.textContent = vehicle.reg;
+            option.dataset.id = vehicle.id;
+            option.dataset.card = vehicle.card;
+            dropdown.appendChild(option);
+        });
+
+        dropdown.style.display = 'block';
+    });
+
+    dropdown.addEventListener('click', function (e) {
+        if (e.target && e.target.dataset.id) {
+            searchInput.value = e.target.textContent;
+            hiddenId.value = e.target.dataset.id;
+            cardInput.value = e.target.dataset.card;
+            dropdown.style.display = 'none';
+        }
+    });
+
+    // Hide dropdown if clicking outside
+    document.addEventListener('click', function (e) {
+        if (!dropdown.contains(e.target) && e.target !== searchInput) {
+            dropdown.style.display = 'none';
+        }
+    });
+</script>
+
 </body>
 </html>
-
-
-
-

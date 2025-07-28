@@ -12,11 +12,8 @@
         <h2 class="text-xl font-bold mb-6 text-blue-600">Approver Panel</h2>
         <nav class="flex flex-col space-y-4">
             <a href="{{ url_for('fuelrequest.approved_records') }}" class="text-gray-700 hover:text-blue-500 font-semibold">Approved Requests</a>
-            <a href="{{ url_for('fuelrequest.view_approver_records') }}" class="text-gray-700 hover:text-blue-500">Records</a>
-            
-            <a href="{{ url_for('fuelrequest.approver_dashboard') }}"class="text-gray-700 hover:text-blue-500 font-semibold">
-    ← Back to Dashboard
-</a>
+            <a href="{{ url_for('fuelrequest.view_approver_records') }}" class="text-gray-700 hover:text-blue-500 font-semibold">Records</a>
+            <a href="{{ url_for('fuelrequest.approver_dashboard') }}" class="text-gray-700 hover:text-blue-500 font-semibold">← Back to Dashboard</a>
         </nav>
     </aside>
 
@@ -34,7 +31,7 @@
                         <th class="px-4 py-2">Requested</th>
                         <th class="px-4 py-2">Card Balance</th>
                         <th class="px-4 py-2">Date</th>
-                        <th class="px-4 py-2">status</th>
+                        <th class="px-4 py-2">Status</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -42,10 +39,20 @@
                     <tr class="border-t">
                         <td class="px-4 py-2">{{ req.driver_name }}</td>
                         <td class="px-4 py-2">{{ req.vehicle.registration_no }}</td>
-                        <td class="px-4 py-2">{{ req.amount_requested }}</td>
+                        <td class="px-4 py-2">{{ req.amount_requested }} Ksh</td>
                         <td class="px-4 py-2">{{ req.current_card_balance }}</td>
                         <td class="px-4 py-2">{{ req.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                        <td class="px-4 py-2">{{ req.status }}</td>
+                        <td class="px-4 py-2">
+                            {% if req.status == 'Approved' %}
+                                <span class="px-3 py-1 rounded-full bg-amber-500 text-white text-xs">Approved</span>
+                            {% elif req.status == 'Loaded' %}
+                                <span class="px-3 py-1 rounded-full bg-green-600 text-white text-xs">Loaded</span>
+                            {% elif req.status == 'Rejected' %}
+                                <span class="px-3 py-1 rounded-full bg-red-600 text-white text-xs">Rejected</span>
+                            {% else %}
+                                <span class="px-3 py-1 rounded-full bg-gray-400 text-white text-xs">{{ req.status }}</span>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
